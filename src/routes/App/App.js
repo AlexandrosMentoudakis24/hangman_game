@@ -1,4 +1,4 @@
-import GameMenu from "./components/GameMenu/GameMenu";
+import GameMenu from "../../components/App/GameMenu/GameMenu";
 
 const App = () => {
   return (

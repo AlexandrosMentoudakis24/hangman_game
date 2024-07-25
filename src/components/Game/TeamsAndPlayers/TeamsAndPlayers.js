@@ -1,27 +1,50 @@
-import { useState } from "react";
-import CreateButton from "./CreateButton";
-import SingleTeam from "./SingleTeam";
+import { v4 as uuidv4 } from "uuid";
 
-const TeamsAndPlayers = () => {
-  const [availableTeams, setAvailableTeams] = useState([]);
+import { useEffect, useState } from "react";
+
+import PlayersContainer from "./PlayersContainer";
+import TeamsContainer from "./TeamsContainer";
+import CreateButton from "./CreateButton";
+
+const TeamsAndPlayers = ({
+  activeTeams,
+  onNewTeamCreateHandler,
+  onTeamDeleteHandler,
+  onTeamNameEditHandler,
+  onNewPlayerCreateHandler,
+  onPlayerDeleteHandler,
+  onPlayerNameEditHandler,
+}) => {
+  const [selectedTeam, setSelectedTeam] = useState({
+    teamId: undefined,
+    teamName: undefined,
+    players: [],
+  });
+
+  useEffect(() => {
+    if (activeTeams.length > 0) {
+      setSelectedTeam(activeTeams[0]);
+    } else {
+      setSelectedTeam({ teamId: undefined, teamName: undefined, players: [] });
+    }
+  }, [activeTeams]);
 
   const onCreateNewTeamHandler = () => {
-    const teamsTotalSum = availableTeams.length;
+    const teamsTotalSum = activeTeams.length;
 
     if (teamsTotalSum >= 4) {
       return;
     }
 
-    setAvailableTeams((prevState) => [
-      ...prevState,
-      { teamName: `Team ${teamsTotalSum + 1}` },
-    ]);
+    const newTeamId = uuidv4();
+
+    onNewTeamCreateHandler(newTeamId, "New Team");
   };
 
   return (
     <div
       className={
-        "grid grid-cols-5 bg-blue-500 text-center w-[65%] h-[50%] rounded-[20px] gap-x-[20px] gap-y-[20px] px-[30px] py-[40px]"
+        "grid grid-cols-5 bg-blue-500 text-center w-[70%] h-[50%] rounded-[20px] gap-x-[20px] gap-y-[20px] px-[30px] py-[40px]"
       }
     >
       <div
@@ -35,12 +58,7 @@ const TeamsAndPlayers = () => {
           onClickHandler={() => {
             onCreateNewTeamHandler();
           }}
-          isDisabled={availableTeams.length >= 4}
-        />
-        <CreateButton
-          title={"New Player"}
-          size={60}
-          onClickHandler={() => {}}
+          isDisabled={activeTeams.length >= 4}
         />
       </div>
       <div
@@ -48,33 +66,37 @@ const TeamsAndPlayers = () => {
           "col-span-2 flex flex-col justify-start items-center text-center px-[5px] pb-[20px] gap-y-[20px]"
         }
       >
-        <div className={"text-[35px] w-full"}>Teams</div>
-        {availableTeams.length > 0 &&
-          availableTeams.map((t) => {
-            return <SingleTeam key={t.teamName} initialValue={t.teamName} />;
-          })}
-        {availableTeams.length === 0 && (
-          <div
-            className={
-              "flex flex-col justify-center items-center text-center h-full text-[25px]"
+        <TeamsContainer
+          activeTeams={activeTeams}
+          onTeamDeleteHandler={onTeamDeleteHandler}
+          onTeamNameEditHandler={onTeamNameEditHandler}
+          onTeamSelectHandler={(teamId) => {
+            let foundTeam;
+
+            try {
+              foundTeam = activeTeams.find((t) => t.teamId === teamId);
+
+              if (foundTeam === undefined) throw new Error("Team not found!");
+
+              setSelectedTeam(foundTeam);
+            } catch (error) {
+              window.alert(error);
             }
-          >
-            Create at least two teams
-            <br /> to start the game!
-            <div className={"pt-[10px]"}>Total available teams: 4</div>
-          </div>
-        )}
+          }}
+        />
       </div>
       <div
         className={
           "col-span-2 flex flex-col justify-start items-center text-center px-[5px] pb-[20px] gap-y-[20px]"
         }
       >
-        <div className={"text-[35px] w-full"}>Players</div>
-        {availableTeams.length > 0 &&
-          availableTeams.map((t) => {
-            return <SingleTeam key={t.teamName} initialValue={t.teamName} />;
-          })}
+        <PlayersContainer
+          activePlayers={selectedTeam.players}
+          selectedTeamId={selectedTeam.teamId}
+          onNewPlayerCreateHandler={onNewPlayerCreateHandler}
+          onPlayerDeleteHandler={onPlayerDeleteHandler}
+          onPlayerNameEditHandler={onPlayerNameEditHandler}
+        />
       </div>
     </div>
   );

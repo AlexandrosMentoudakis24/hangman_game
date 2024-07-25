@@ -29,6 +29,31 @@ class GameModel {
   }
 }
 
+class Team {
+  constructor(teamId, teamName, players) {
+    this.teamId = teamId;
+    this.teamName = teamName;
+    this.players = players;
+  }
+
+  addNewPlayer(newPlayer) {
+    this.players = [...this.players, newPlayer];
+  }
+}
+
+class Player {
+  constructor(playerId, playerName) {
+    this.playerId = playerId;
+    this.playerName = playerName;
+  }
+
+  addNewPlayer(newPlayer) {
+    this.players = [...this.players, newPlayer];
+  }
+}
+
 exports.GameModel = GameModel;
+exports.Team = Team;
+exports.Player = Player;
 exports.GameMode = GameMode;
 exports.GameDifficulty = GameDifficulty;

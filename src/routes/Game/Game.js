@@ -1,42 +1,18 @@
 import { useReducer, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 
 import DifficultyContainer from "../../components/Game/Difficulty/DifficultyContainer";
-import GameModeContainer from "../../components/Game/GameMode/GameModeContainer";
-import { useNavigate } from "react-router-dom";
 import TeamsAndPlayers from "../../components/Game/TeamsAndPlayers/TeamsAndPlayers";
-
-const GameReducer = (state, action) => {
-  switch (action.type) {
-    case "changeGameMode":
-      return {
-        ...state,
-        gameMode: action.newGameMode,
-      };
-    case "changeGameDifficulty":
-      return {
-        ...state,
-        gameDifficulty: action.newGameDifficulty,
-      };
-    case "onPrevStep":
-      return {
-        ...state,
-        currentStep: state.currentStep - 1,
-      };
-    case "onNextStep":
-      return {
-        ...state,
-        currentStep: state.currentStep + 1,
-      };
-    default:
-      throw Error("Unknown action: " + action.type);
-  }
-};
+import GameModeContainer from "../../components/Game/GameMode/GameModeContainer";
+import { GameMode } from "../../models/GameModel";
+import GameReducer from "../../reducers/GameReducer";
 
 const initialState = {
   gameMode: undefined,
   gameDifficulty: undefined,
+  teams: [],
   currentStep: 0,
 };
 
@@ -46,6 +22,7 @@ const Game = () => {
     isVisible: false,
     errorMessage: "",
   });
+
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       event.preventDefault();
@@ -59,6 +36,80 @@ const Game = () => {
   }, []);
 
   const navigate = useNavigate();
+
+  const secondStage = [
+    {
+      title: "Select Game Difficulty",
+      element: (
+        <DifficultyContainer
+          selectedGameDifficulty={state.gameDifficulty}
+          onNewGameDifficultySelected={(newSelectedDifficulty) => {
+            setErrorMessage({ isVisible: false, errorMessage: "" });
+
+            dispatch({
+              type: "changeGameDifficulty",
+              newGameDifficulty: newSelectedDifficulty,
+            });
+          }}
+        />
+      ),
+    },
+    {
+      title: "Create Teams & Players",
+      element: (
+        <TeamsAndPlayers
+          activeTeams={state.teams}
+          onNewTeamCreateHandler={(newTeamId, newTeamName) => {
+            setErrorMessage({ isVisible: false, errorMessage: "" });
+
+            dispatch({
+              type: "addNewTeam",
+              newTeamId: newTeamId,
+              newTeamName: newTeamName,
+            });
+          }}
+          onTeamDeleteHandler={(teamId) => {
+            dispatch({
+              type: "deleteTeam",
+              teamId: teamId,
+            });
+          }}
+          onTeamNameEditHandler={(teamId, newTeamName) => {
+            dispatch({
+              type: "editTeamName",
+              teamId: teamId,
+              newTeamName: newTeamName,
+            });
+          }}
+          onNewPlayerCreateHandler={(teamId, newPlayerId, newPlayerName) => {
+            setErrorMessage({ isVisible: false, errorMessage: "" });
+
+            dispatch({
+              type: "addNewPlayer",
+              selectedTeamId: teamId,
+              newPlayerId: newPlayerId,
+              newPlayerName: newPlayerName,
+            });
+          }}
+          onPlayerDeleteHandler={(teamId, playerId) => {
+            dispatch({
+              type: "deletePlayer",
+              selectedTeamId: teamId,
+              playerId: playerId,
+            });
+          }}
+          onPlayerNameEditHandler={(teamId, playerId, newPlayerName) => {
+            dispatch({
+              type: "editPlayerName",
+              selectedTeamId: teamId,
+              playerId: playerId,
+              newPlayerName: newPlayerName,
+            });
+          }}
+        />
+      ),
+    },
+  ];
 
   const GameModeObjectList = [
     {
@@ -77,26 +128,7 @@ const Game = () => {
         />
       ),
     },
-    {
-      title: "Create Teams & Players",
-      element: <TeamsAndPlayers />,
-    },
-    // {
-    //   title: "Select Game Difficulty",
-    //   element: (
-    //     <DifficultyContainer
-    //       selectedGameDifficulty={state.gameDifficulty}
-    //       onNewGameDifficultySelected={(newSelectedDifficulty) => {
-    //         setErrorMessage({ isVisible: false, errorMessage: "" });
-
-    //         dispatch({
-    //           type: "changeGameDifficulty",
-    //           newGameDifficulty: newSelectedDifficulty,
-    //         });
-    //       }}
-    //     />
-    //   ),
-    // },
+    secondStage[state.gameMode === GameMode.multiplayer ? 1 : 0],
   ];
 
   const currentTitle = GameModeObjectList[state.currentStep].title;
@@ -127,13 +159,27 @@ const Game = () => {
       return;
     }
 
-    if (state.currentStep === 1 && state.gameDifficulty === undefined) {
-      setErrorMessage({
-        isVisible: true,
-        errorMessage: "You must select the Game Difficulty first!",
-      });
+    if (state.currentStep === 1) {
+      if (
+        state.gameMode === GameMode.singleMode &&
+        state.gameDifficulty === undefined
+      ) {
+        setErrorMessage({
+          isVisible: true,
+          errorMessage: "You must select the Game Difficulty first!",
+        });
 
-      return;
+        return;
+      }
+
+      if (state.gameMode === GameMode.multiplayer && state.teams.length < 2) {
+        setErrorMessage({
+          isVisible: true,
+          errorMessage: "You must create at least 2 teams to play!",
+        });
+
+        return;
+      }
     }
 
     // TO-DO --> COMPLETE FUNCTION
@@ -141,7 +187,28 @@ const Game = () => {
     if (state.currentStep >= GameModeObjectList.length - 1) {
       // TO-DO --> START THE GAME
 
-      navigate("/");
+      let isTeamPlayersListEmpty = false;
+
+      for (let index = 0; index < state.teams.length; index++) {
+        const players = state.teams[index].players;
+
+        if (players.length === 0) {
+          isTeamPlayersListEmpty = true;
+
+          break;
+        }
+      }
+
+      if (isTeamPlayersListEmpty) {
+        setErrorMessage({
+          isVisible: true,
+          errorMessage: "Every existing team must have at least one player!",
+        });
+
+        return;
+      }
+
+      navigate("/playing");
 
       return;
     }

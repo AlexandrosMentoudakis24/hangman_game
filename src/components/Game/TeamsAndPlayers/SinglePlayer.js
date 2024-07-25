@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 
-import { GrSelection } from "react-icons/gr";
 import { MdDelete } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
 import { MdEdit } from "react-icons/md";
 
-const SingleTeam = ({
-  teamId,
+const SinglePlayer = ({
+  playerId,
+  selectedTeamId,
   initialValue,
-  onTeamDelete,
-  onTeamNameEdit,
-  onTeamSelect,
+  onPlayerDelete,
+  onPlayerNameEdit,
 }) => {
   const [inputValue, setInputValue] = useState(initialValue);
   const [isReadOnly, setIsReadOnly] = useState(true);
@@ -45,7 +44,7 @@ const SingleTeam = ({
           value={inputValue}
           onChange={(event) => {
             setInputValue(event.target.value);
-            onTeamNameEdit(teamId, event.target.value);
+            onPlayerNameEdit(selectedTeamId, playerId, event.target.value);
           }}
           readOnly={isReadOnly}
           maxLength={40}
@@ -72,19 +71,14 @@ const SingleTeam = ({
           </button>
         )}
       </div>
-      <div className={"flex flex-row justify-center items-center"}>
-        <button onClick={() => onTeamDelete(teamId)} className={"ml-[5px]"}>
-          <MdDelete color="red" size={30} />
-        </button>
-        <button onClick={() => onTeamSelect(teamId)} className={"ml-[5px]"}>
-          <GrSelection
-            className={"text-black hover:text-white active:text-slate-400"}
-            size={25}
-          />
-        </button>
-      </div>
+      <button
+        onClick={() => onPlayerDelete(selectedTeamId, playerId)}
+        className={"ml-[5px]"}
+      >
+        <MdDelete color="red" size={30} />
+      </button>
     </div>
   );
 };
 
-export default SingleTeam;
+export default SinglePlayer;

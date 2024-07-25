@@ -21,7 +21,7 @@ const TeamsAndPlayers = () => {
   return (
     <div
       className={
-        "grid grid-cols-5 bg-blue-500 text-center w-[50%] h-[50%] rounded-[20px] gap-x-[20px] gap-y-[20px] px-[30px] py-[40px]"
+        "grid grid-cols-5 bg-blue-500 text-center w-[65%] h-[50%] rounded-[20px] gap-x-[20px] gap-y-[20px] px-[30px] py-[40px]"
       }
     >
       <div

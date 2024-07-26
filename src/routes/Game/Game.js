@@ -6,8 +6,10 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 import DifficultyContainer from "../../components/Game/Difficulty/DifficultyContainer";
 import TeamsAndPlayers from "../../components/Game/TeamsAndPlayers/TeamsAndPlayers";
 import GameModeContainer from "../../components/Game/GameMode/GameModeContainer";
-import { GameMode } from "../../models/GameModel";
 import GameReducer from "../../reducers/GameReducer";
+import { GameMode, Gamestate } from "../../models/GameModel";
+import GameStateReducer from "../../reducers/GameState";
+import GameStart from "../GameStart/GameStart";
 
 const initialState = {
   gameMode: undefined,
@@ -16,8 +18,18 @@ const initialState = {
   currentStep: 0,
 };
 
+const gameStateInitialState = {
+  state: Gamestate.preparation,
+};
+
 const Game = () => {
   const [state, dispatch] = useReducer(GameReducer, initialState);
+
+  const [gameState, gameStateDispatch] = useReducer(
+    GameStateReducer,
+    gameStateInitialState
+  );
+
   const [errorMessage, setErrorMessage] = useState({
     isVisible: false,
     errorMessage: "",
@@ -184,9 +196,7 @@ const Game = () => {
 
     // TO-DO --> COMPLETE FUNCTION
 
-    if (state.currentStep >= GameModeObjectList.length - 1) {
-      // TO-DO --> START THE GAME
-
+    if (state.currentStep === GameModeObjectList.length - 1) {
       let isTeamPlayersListEmpty = false;
 
       for (let index = 0; index < state.teams.length; index++) {
@@ -208,7 +218,10 @@ const Game = () => {
         return;
       }
 
-      navigate("/playing");
+      gameStateDispatch({
+        type: "changeGameState",
+        newGameState: Gamestate.playing,
+      });
 
       return;
     }
@@ -219,68 +232,75 @@ const Game = () => {
   };
 
   return (
-    <div className={"relative"}>
-      <button
-        onClick={() => {
-          navigate("/");
-        }}
-        className={
-          "flex flex-row text-center items-center hover:text-slate-400 active:text-slate-500 absolute top-[30px] left-[50px] text-[25px]"
-        }
-      >
-        <FaArrowLeft size={22} />
-        <span className={"ml-[12px]"}>Go Back</span>
-      </button>
-      <div
-        className={
-          "flex flex-col justify-center items-center w-screen h-screen"
-        }
-      >
-        <div
-          className={
-            "tracking-[1px] text-[40px] underline underline-offset-[5px] mb-[50px]"
-          }
-        >
-          {currentTitle}
-        </div>
-        {errorMessage.isVisible && (
-          <div className={"text-[35px] text-rose-600 mb-[20px]"}>
-            {errorMessage.errorMessage}
-          </div>
-        )}
-        {currentElement}
-        <div
-          className={`flex flex-row ${
-            state.currentStep === 0 ? "justify-end" : "justify-between"
-          } items-center w-[50%] mt-[30px]`}
-        >
-          {state.currentStep !== 0 && (
-            <button
-              onClick={onPrevStepHandler}
+    <>
+      {gameState.state === Gamestate.playing && (
+        <GameStart gameState={gameState.state} gameObject={state} />
+      )}
+      {gameState.state === Gamestate.preparation && (
+        <div className={"relative"}>
+          <button
+            onClick={() => {
+              navigate("/");
+            }}
+            className={
+              "flex flex-row text-center items-center hover:text-slate-400 active:text-slate-500 absolute top-[30px] left-[50px] text-[25px]"
+            }
+          >
+            <FaArrowLeft size={22} />
+            <span className={"ml-[12px]"}>Go Back</span>
+          </button>
+          <div
+            className={
+              "flex flex-col justify-center items-center w-screen h-screen"
+            }
+          >
+            <div
               className={
-                "flex flex-row hover:text-slate-400 active:text-slate-500 jsutify-center items-center text-[30px]"
+                "tracking-[1px] text-[40px] underline underline-offset-[5px] mb-[50px]"
               }
             >
-              <FaArrowLeft />
-              <span className={"ml-[10px]"}>Previous</span>
-            </button>
-          )}
-          <button
-            onClick={onNextStepHandler}
-            className="flex flex-row jsutify-center items-center hover:text-slate-400 active:text-slate-500 text-[30px]"
-          >
-            <span className={"mr-[10px]"}>
-              {state.currentStep >= GameModeObjectList.length - 1
-                ? "Start Game"
-                : "Next"}
-            </span>
-            {!state.currentStep >= GameModeObjectList.length - 1 && (
-              <FaArrowRight />
+              {currentTitle}
+            </div>
+            {errorMessage.isVisible && (
+              <div className={"text-[35px] text-rose-600 mb-[20px]"}>
+                {errorMessage.errorMessage}
+              </div>
             )}
-          </button>
+            {currentElement}
+            <div
+              className={`flex flex-row ${
+                state.currentStep === 0 ? "justify-end" : "justify-between"
+              } items-center w-[50%] mt-[30px]`}
+            >
+              {state.currentStep !== 0 && (
+                <button
+                  onClick={onPrevStepHandler}
+                  className={
+                    "flex flex-row hover:text-slate-400 active:text-slate-500 jsutify-center items-center text-[30px]"
+                  }
+                >
+                  <FaArrowLeft />
+                  <span className={"ml-[10px]"}>Previous</span>
+                </button>
+              )}
+              <button
+                onClick={onNextStepHandler}
+                className="flex flex-row jsutify-center items-center hover:text-slate-400 active:text-slate-500 text-[30px]"
+              >
+                <span className={"mr-[10px]"}>
+                  {state.currentStep >= GameModeObjectList.length - 1
+                    ? "Start Game"
+                    : "Next"}
+                </span>
+                {!state.currentStep >= GameModeObjectList.length - 1 && (
+                  <FaArrowRight />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

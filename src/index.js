@@ -16,7 +16,6 @@ const router = createBrowserRouter([
     path: "/game",
     element: <Game />,
   },
-  { path: "/playing", element: <GameStart teams={[]} /> },
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

@@ -3,6 +3,13 @@ const GameMode = {
   multiplayer: "Multiplayer",
 };
 
+const Gamestate = {
+  preparation: "Preparation",
+  playing: "Playing",
+  paused: "Paused",
+  completed: "Completed",
+};
+
 const GameDifficulty = {
   easy: "Easy",
   intermediate: "Intermediate",
@@ -57,3 +64,4 @@ exports.Team = Team;
 exports.Player = Player;
 exports.GameMode = GameMode;
 exports.GameDifficulty = GameDifficulty;
+exports.Gamestate = Gamestate;

@@ -6,15 +6,21 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 import DifficultyContainer from "../../components/Game/Difficulty/DifficultyContainer";
 import TeamsAndPlayers from "../../components/Game/TeamsAndPlayers/TeamsAndPlayers";
 import GameModeContainer from "../../components/Game/GameMode/GameModeContainer";
-import GameReducer from "../../reducers/GameReducer";
 import { GameMode, Gamestate } from "../../models/GameModel";
 import GameStateReducer from "../../reducers/GameState";
+import GameReducer from "../../reducers/GameReducer";
 import GameStart from "../GameStart/GameStart";
+import GameInfosSettings from "../../components/Game/GameInfosSettings/GameInfosSettings";
 
 const initialState = {
   gameMode: undefined,
   gameDifficulty: undefined,
   teams: [],
+  gameInfos: {
+    hasTimer: false,
+    teamAvailableTime: 0,
+    neededPointsForWin: 0,
+  },
   currentStep: 0,
 };
 
@@ -123,6 +129,11 @@ const Game = () => {
     },
   ];
 
+  const thirdStage = {
+    title: "Declare Game conditions!",
+    element: <GameInfosSettings />,
+  };
+
   const GameModeObjectList = [
     {
       title: "Select Game Mode",
@@ -141,6 +152,7 @@ const Game = () => {
       ),
     },
     secondStage[state.gameMode === GameMode.multiplayer ? 1 : 0],
+    thirdStage,
   ];
 
   const currentTitle = GameModeObjectList[state.currentStep].title;
